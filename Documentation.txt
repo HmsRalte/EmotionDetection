@@ -1,0 +1,138 @@
+Dataset used:
+https://www.kaggle.com/code/jonathanoheix/face-expression-recognition-with-deep-learning
+
+There are certain benefits of using Prolog over Python in certain contexts, particularly when it comes to logic programming and certain types of problem-solving tasks:
+
+1. **Declarative Programming**: Prolog is a declarative programming language, which means you specify what you want to achieve rather than how to achieve it. 
+This makes it well-suited for tasks that involve logical reasoning and constraint solving.
+
+2. **Pattern Matching**: Prolog has built-in support for pattern matching, which allows you to express complex relationships and search for solutions based on matching patterns. 
+This makes it particularly useful for tasks such as natural language processing, expert systems, and symbolic reasoning.
+
+3. **Backtracking**: Prolog has a built-in backtracking mechanism, which allows it to explore multiple solutions to a problem. 
+This can be useful in situations where you need to find all possible solutions or explore different paths to a solution.
+
+4. **Logical Inference**: Prolog provides powerful mechanisms for logical inference, allowing you to reason about facts and rules and derive new knowledge from existing knowledge. 
+This makes it suitable for applications in artificial intelligence, expert systems, and knowledge representation.
+
+However, it's important to note that Python is a general-purpose programming language with a much larger ecosystem and community support compared to Prolog. 
+Python is widely used in various domains, including web development, data analysis, machine learning, and more. So, the choice between Prolog and Python depends on the specific requirements of your project and the problem domain you are working in.
+
+When making the CNN layers, an error occurrs when Adam optimizer in Keras uses the lr arguement for learning rate 
+Instead the new Keras uses simply learning_rate
+
+so the code was fixed as follows:
+    opt = Adam(learning_rate = 0.0001)
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
+
+Another error occurs in Training and Validating Data:
+
+    checkpoint = ModelCheckpoint("./model.h5", monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+The error message indicates that the file path provided to the ModelCheckpoint callback must end with .keras, as per the latest Keras API. 
+In our code, we're trying to save the model with an .h5 extension, which is causing the error.
+
+This can be fixed by changing the file extension from .h5 to .keras:
+    checkpoint = ModelCheckpoint("./model.keras", monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+
+This code creates a ModelCheckpoint callback that saves the model to the file model.keras whenever the validation accuracy (val_acc) improves. 
+The verbose=1 argument means that the callback will print a message whenever it saves the model. 
+The save_best_only=True argument means that the callback will only save the model when its performance is currently the best. 
+The mode='max' argument means that the callback considers higher validation accuracy as better.
+
+Another error occurs when fitting the generated data:
+
+An error message suggests that the fit_generator method is not found for the model object. 
+This is because fit_generator is deprecated in TensorFlow 2.2 and removed in TensorFlow 2.4. 
+You should use the fit method instead, which now supports generator inputs.
+
+history = model.fit(x=train_set,
+                    steps_per_epoch=train_set.n//train_set.batch_size,
+                    epochs=epochs,
+                    validation_data=test_set,
+                    validation_steps=test_set.n//test_set.batch_size,
+                    callbacks=callbacks_list)
+
+This code trains the model for a given number of epochs (iterations on a dataset). 
+It uses the fit method, which is a more general version of fit_generator and works for both data generators and regular data. 
+The train_set and test_set are generators that yield batches of images and labels for training and validation, respectively. 
+The callbacks_list is a list of callbacks to apply during training and validation.
+
+Then the Epcohs are executed:
+    sample:
+    Epoch 1/48
+    # Plotting Accuracy & Loss
+     98/225 ━━━━━━━━━━━━━━━━━━━━ 3:12 2s/step - accuracy: 0.2202 - loss: 2.0443
+
+Graph 1:
+
+This graph represents the loss values during the training and validation phases of a model. Loss is a measure of how well the model is performing. 
+In this case, the y-axis represents the loss values, and the x-axis represents the number of epochs or training iterations.
+
+The blue line represents the training loss, which shows how the loss decreases as the model learns from the training data. 
+The orange line represents the validation loss, which shows how the loss changes on a separate validation dataset that the model hasn't seen during training. 
+The validation loss helps us understand if the model is overfitting or underfitting.
+
+Graph 2:
+
+This graph represents the accuracy values during the training and validation phases of a model. Accuracy is a measure of how well the model predicts the correct labels. 
+In this case, the y-axis represents the accuracy values, and the x-axis represents the number of epochs or training iterations.
+
+The blue line represents the training accuracy, which shows how the accuracy improves as the model learns from the training data. 
+The orange line represents the validation accuracy, which shows how the accuracy changes on the separate validation dataset. 
+The validation accuracy helps us understand how well the model generalizes to unseen data.
+
+By plotting these two graphs side by side, we can visually analyze the performance of the model during training. 
+We can observe how the loss decreases and the accuracy improves over time. This information is crucial for evaluating and fine-tuning the model to achieve better results.
+
+
+EPoch Explanation:
+
+The output "Epoch 1/48" is indicating the progress of your model's training process.
+
+An "epoch" in machine learning is one complete pass through the entire training dataset.
+
+So, "Epoch 1/48" means that the model is on the first pass through the training data out of a total of 48 passes.
+
+After each epoch, the model's weights are updated based on the data it has seen, and it will start the next epoch with this updated state. 
+The model will continue this process for the specified number of epochs (48 in your case), or until some other stopping condition is met (like no further improvement in validation loss for a certain 
+number of epochs, if you're using early stopping).
+
+When an Epoch suddenly stops early:
+
+The model training stopped at epoch 3 due to the EarlyStopping callback you have included in your callbacks_list.
+
+EarlyStopping is a form of regularization used to prevent overfitting when training a learner with an iterative method, such as gradient descent. 
+This callback will stop the training when a monitored metric has stopped improving.
+
+In your case, it seems like the model's performance on the validation set did not improve for two epochs (epochs 2 and 3), so the EarlyStopping callback stopped the training at epoch 3.
+
+The message "Restoring model weights from the end of the best epoch: 1" means that the EarlyStopping callback is restoring the model weights from the epoch where the monitored metric 
+(like validation loss) was best, which is epoch 1 in your case. This is because you have set restore_best_weights=True in your EarlyStopping callback.
+
+If you want the model to train for more epochs before stopping, you can increase the patience parameter in the EarlyStopping callback. 
+This parameter determines the number of epochs with no improvement after which training will be stopped. The higher the patience, the longer the training could continue potentially leading to better performance.
+
+    You can save a trained Keras model using the save method, and load it back using the load_model function from keras.models. Here's how you can do it:
+
+    To save a model:
+    model.save("my_model.keras")
+
+    This code saves the entire model to a single file, including its architecture, optimizer, and the state of the optimizer, so you can resume training where you left off.
+
+    To load a saved model:
+    from keras.models import load_model
+
+    loaded_model = load_model("my_model.keras")
+
+    This code loads the model from the file my_model.keras. The returned model is a compiled model ready to be used (unless the saved model was never compiled in the first place).
+
+All in all the program works as follows:
+
+Emotion detection algorithm:
+
+1.Utilizes a pre-trained convolutional neural network (CNN) model loaded using Keras.
+2.Detects faces in a video stream using Haar cascades.
+3.Processes the detected faces, extracts regions of interest (ROI), and resizes them to a fixed size (48x48).
+4.Normalizes the ROI and makes predictions using the loaded CNN model.
+5.Maps the predicted class index to human-readable emotion labels and overlays them on the video stream.
